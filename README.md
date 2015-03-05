@@ -30,7 +30,7 @@ Make your enhancer point to the "route" action.
 
 Your routes are defined by an associative array pattern => action.
 
-The pattern is defined by segments separated by "/". If a segment begins by ":" it will be considered a [Parameters][].
+The pattern is defined by segments separated by "/". If a segment begins by ":" it will be considered a Parameters (see below).
 
 The action is the name of a public function named "action_{action}".
 
@@ -47,9 +47,9 @@ protected static $_routes = array(
 ```
 
 The route priority is defined by the order of the routes in this array. The first declared route will be matched first.
-(i.e : The /:page route will be matched before the /:char
+(i.e : The /:page route will be matched before the /:char)
 
-### [Parameters]
+### Parameters
 
 Parameters are set in the protected static $_params property as an associative array ({param_name}:configuration)
 
