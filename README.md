@@ -176,3 +176,7 @@ class Controller_Front_MyEnhancer extends \Enhancer\Controller_Front_Application
     }
 }
 ```
+
+## License
+
+‘Controller_Front_Application_Enhancer’ is licensed under [GNU Affero General Public License v3](http://www.gnu.org/licenses/agpl-3.0.html) or (at your option) any later version.
