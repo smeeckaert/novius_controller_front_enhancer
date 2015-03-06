@@ -33,6 +33,9 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
     {
         $bestRouteParameters = 0;
         $bestRoute           = null;
+        if (isset($params['route'])) {
+            return static::buildRoute($params, static::explodeRoute($params['route']));
+        }
         // Find route with the more matching parameters
         foreach (static::$_cacheRoute as $count => $cachedRoutes) {
             foreach ($cachedRoutes as $key => $route) {
@@ -266,6 +269,9 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
             if (!empty($field_name)) {
                 static::$_cacheProperty[$key] = $field_name;
             }
+        }
+        if (isset(static::$_cacheProperty['route'])) {
+            throw new \Exception("You can't use 'route' as a parameter name");
         }
     }
 

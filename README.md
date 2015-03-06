@@ -118,6 +118,17 @@ Will output
 http://.../enhancer_url/page-virtual-name/id-test/b/have-fun.html
 ```
 
+You can override this behaviour by giving the 'route' parameter which contain a valid route.
+
+```php
+echo Tools_Enhancer::url('enhancer_test', array('route' => '/:page', 'page' => $page, 'id' => 'id-test', 'char' => 'b'));
+```
+
+Will output
+```
+http://.../enhancer_url/page-virtual-name.html
+```
+
 Caution: The builder always assume that your parameters are correct.
 
 ## Example
