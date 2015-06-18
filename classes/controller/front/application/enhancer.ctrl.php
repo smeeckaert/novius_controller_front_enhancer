@@ -107,18 +107,19 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
     {
         static::initCacheProperty();
         // Replace route parameters with values
-        $route = array_map(function ($i) use ($params) {
-            $extract = static::extractParameter($i);
+        foreach ($route as $key => $i) {
+            $extract = self::extractParameter($i);
+            $v       = $i;
             if (!empty($extract)) {
                 if (isset(static::$_cacheProperty[$extract])) {
                     $prop = static::$_cacheProperty[$extract];
-                    return $params[$extract]->$prop;
+                    $v    = $params[$extract]->$prop;
                 } else {
-                    return $params[$extract];
+                    $v = $params[$extract];
                 }
             }
-            return $i;
-        }, $route);
+            $route[$key] = $v;
+        }
         return implode('/', $route) . '.html';
     }
 
