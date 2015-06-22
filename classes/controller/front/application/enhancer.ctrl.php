@@ -36,6 +36,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         if (isset($params['route'])) {
             return static::buildRoute($params, static::explodeRoute($params['route']));
         }
+        static::initCache();
         // Find route with the more matching parameters
         foreach (static::$_cacheRoute as $count => $cachedRoutes) {
             foreach ($cachedRoutes as $key => $route) {
