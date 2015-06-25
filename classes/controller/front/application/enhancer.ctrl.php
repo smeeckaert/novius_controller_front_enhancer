@@ -118,6 +118,9 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
                 } else {
                     $v = $params[$extract];
                 }
+                if (!empty(static::$_params[$extract]['format'])) {
+                    $v = static::callback(static::$_params[$extract]['format'], array($params[$extract], true));
+                }
             }
             $route[$key] = $v;
         }
@@ -166,6 +169,9 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
                 if (empty($matchingElement)) { // Matching parameters
                     return false;
                 }
+                if (!empty(static::$_params[$extractParam]['format'])) {
+                    $matchingElement = static::callback(static::$_params[$extractParam]['format'], array($matchingElement, false));
+                }
                 $cacheParams[$extractParam] = $matchingElement;
             } elseif ($routeElement != $parameters[$key]) { // Matching string parts of the route
                 return false;
@@ -189,16 +195,13 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         if (empty($paramsInfos)) { // No params, we always match this parameter
             return $value;
         }
-        if (isset($paramsInfos['match'])) { // Callable property to match the variable
-            if (!is_callable($paramsInfos['match'])) {
-                throw new \Exception("Match parameter must be callable");
-                return null;
-            } else {
-                if ($paramsInfos['match']($value)) {
-                    return $value;
-                }
-                return false;
+        if (isset($paramsInfos['match'])) {
+            // Callable property to match the variable
+            $match = static::callback($paramsInfos['match'], array($value));
+            if ($match) {
+                return $value;
             }
+            return false;
         }
         if (isset($paramsInfos['model'])) {
             $model = $this->findModel($param, $paramsInfos, $value);
@@ -206,7 +209,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
                 return $model;
             }
         }
-        return false;
+        return $value;
     }
 
     /**
@@ -239,6 +242,21 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         }
         return $query->where($field_name, $value)->get_one();
     }
+
+    protected static function callback($cb, $params)
+    {
+        if (!is_callable($cb)) {
+            $className = get_called_class();
+            if (method_exists($className, $cb)) {
+                $cb = $className . '::' . $cb;
+            }
+        }
+        if (is_callable($cb)) {
+            return call_user_func_array($cb, $params);
+        }
+        throw new \Exception("$cb must be callable");
+    }
+
 
     /**
      * Put in cache database property of models fields

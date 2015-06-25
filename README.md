@@ -76,6 +76,47 @@ If the configuration is empty, the parameter will always match like a wildcard.
 
 The key 'match' can contain a callable that will be used to check the value of the parameter.
 
+##### format
+
+The key 'format' can contain a callable that will be used to the shape of a parameter during a request.
+
+This callback will be called when matching parameters to transform the matched parameter to another object or string.
+
+It will be called when building the url to transform back the parameter to its string form.
+
+The callback takes two parameters, the value, and a boolean which is true when building the query.
+
+In this example we transform a date parameter to a date object.
+
+```php
+
+protected static $_params = array(
+    'date' => array('format' => 'routeDateFormat')
+);
+
+public static function routeDateFormat($value, $output)
+{
+    if ($output) {
+        $class = get_class($value);
+        if ($class === "Date") {
+            return $value->format('%Y-%m-%d');
+        }
+    } else {
+        try {
+            return Date::create_from_string($value, '%Y-%m-%d');
+        } catch (\UnexpectedValueException $e) {
+            return null;
+        }
+    }
+}
+
+public function action_main()
+{
+    dd(get_class($this->routeParam('date')); // null or Date
+}
+
+```
+
 ##### model
 
 The key 'model' can contain a class name that will be used to find the property.
@@ -101,6 +142,23 @@ public function action_page()
 {
     $modelPage = $this->routeParam('page');
 }
+```
+
+### Callables
+
+All callables are patched to allow static call within the class.
+That way if you have a static method in your class, you don't have to prefix it in parameters like match or format.
+
+```php
+
+static $_params = array(
+'date' => array('format' => 'matchDate')
+);
+
+public static function matchDate(){
+//...
+}
+
 ```
 
 ### Building URLs
