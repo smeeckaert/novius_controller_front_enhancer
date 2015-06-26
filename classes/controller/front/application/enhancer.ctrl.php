@@ -114,8 +114,10 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
             if (!empty($extract)) {
                 if (isset(static::$_cacheProperty[$extract])) {
                     $prop = static::$_cacheProperty[$extract];
-                    if (property_exists($params[$extract], $prop)) {
+                    try {
                         $v = $params[$extract]->$prop;
+                    } catch (\Exception $e) {
+                        $v = null;
                     }
                 } else {
                     $v = $params[$extract];
