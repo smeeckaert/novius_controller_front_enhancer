@@ -196,7 +196,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
     private function testParam($param, $value)
     {
         $paramsInfos = static::$_params[$param];
-        if (empty($paramsInfos)) { // No params, we always match this parameter
+        if (empty($paramsInfos['match']) && empty($paramsInfos['model'])) { // No params, we always match this parameter
             return $value;
         }
         if (isset($paramsInfos['match'])) {
@@ -213,7 +213,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
                 return $model;
             }
         }
-        return $value;
+        return null;
     }
 
     /**
