@@ -69,8 +69,10 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
 
     public function action_route()
     {
-        $enhancer_url = $this->main_controller->getEnhancerUrl();
-        $route        = $this->explodeRoute($enhancer_url);
+        if (method_exists($this->main_controller, 'getEnhancerUrl')) {
+            $enhancer_url = $this->main_controller->getEnhancerUrl();
+        }
+        $route = $this->explodeRoute($enhancer_url);
         static::initCache();
         $cArgs = count($route);
         if (!isset(static::$_cacheRoute[$cArgs])) {
