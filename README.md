@@ -49,6 +49,31 @@ protected static $_routes = array(
 The route priority is defined by the order of the routes in this array. The first declared route will be matched first.
 (i.e : The /:page route will be matched before the /:char)
 
+#### Route configuration
+
+You can extend the simple route configuration to allow more control of the routing.
+In order to do so, you must change the name of the action by an associative array like this one below.
+
+All theses options can be used by the routeConfig method in the controller.
+
+The cache management is already implemented in the controller.
+
+```php
+protected static $_routes = array(
+        '/'       => 'home',
+        '/:param' => array(
+            'action' => 'home',
+            'cache'  => array(
+                array(
+                    'type'     => 'callable',
+                    'callable' => "MyCallableMethod",
+                    'args'     => array()
+                ),
+            ),
+        ),
+    );
+```
+
 ### Parameters
 
 Parameters are set in the protected static $_params property as an associative array ({param_name}:configuration)

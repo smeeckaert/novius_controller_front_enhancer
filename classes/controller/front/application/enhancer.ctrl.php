@@ -87,19 +87,35 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         if (empty($matchingRoute)) {
             throw new \Nos\NotFoundException();
         }
+        $this->routeConfig($matchingRoute);
         $action = "action_" . $matchingRoute['action'];
         return $this->format($this->$action());
+    }
+
+    protected function routeConfig($route)
+    {
+        if (!empty($route['cache'])) {
+            $this->setCacheRoute($route['cache']);
+        }
+    }
+
+    protected function setCacheRoute($infos)
+    {
+        if (\Arr::get($infos, 'disable')) {
+            \Nos\Nos::main_controller()->disableCaching();
+        } else {
+            \Nos\Nos::main_controller()->addCacheSuffixHandler($infos);
+        }
     }
 
     protected function format($data)
     {
         if (\Input::is_ajax()) {
             $content = $data;
-            if (get_class($content) === 'View') {
-                $content = $content->render();
+            if (is_array($content)) {
+                $content = json_encode($content);
             }
-            \Response::json(200, $content);
-            return;
+            return $this->main_controller->sendContent($content);
         }
         return $data;
     }
@@ -349,7 +365,14 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
             if (!isset(static::$_cacheRoute[$class][$c])) {
                 static::$_cacheRoute[$class][$c] = array();
             }
-            static::$_cacheRoute[$class][$c][] = array('route' => $route, 'action' => $action);
+            $data = array('route' => $route);
+            if (is_array($action)) {
+                $data = \Arr::merge($data, $action);
+            } else {
+                $data['action'] = $action;
+            }
+
+            static::$_cacheRoute[$class][$c][] = $data;
         }
     }
 }
