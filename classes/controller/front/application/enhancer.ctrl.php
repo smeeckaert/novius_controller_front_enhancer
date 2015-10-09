@@ -37,26 +37,29 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
             return static::buildRoute($params, static::explodeRoute($params['route']));
         }
         static::initCache();
+        $class = get_called_class();
         // Find route with the more matching parameters
-        foreach (static::$_cacheRoute as $count => $cachedRoutes) {
-            foreach ($cachedRoutes as $key => $route) {
-                $match      = true;
-                $matchCount = 0;
-                // Try to match all parameters
-                foreach ($route['route'] as $param) {
-                    $extract = static::extractParameter($param);
-                    if (!empty($extract) && empty($params[$extract])) {
-                        $match = false;
-                        break;
+        if (!empty(static::$_cacheRoute[$class])) {
+            foreach (static::$_cacheRoute[$class] as $count => $cachedRoutes) {
+                foreach ($cachedRoutes as $key => $route) {
+                    $match      = true;
+                    $matchCount = 0;
+                    // Try to match all parameters
+                    foreach ($route['route'] as $param) {
+                        $extract = static::extractParameter($param);
+                        if (!empty($extract) && empty($params[$extract])) {
+                            $match = false;
+                            break;
+                        }
+                        if (!empty($extract)) {
+                            $matchCount++;
+                        }
                     }
-                    if (!empty($extract)) {
-                        $matchCount++;
+                    // if we match the more parameter, keep this route
+                    if ($match && $matchCount > $bestRouteParameters) {
+                        $bestRouteParameters = $matchCount;
+                        $bestRoute           = $route;
                     }
-                }
-                // if we match the more parameter, keep this route
-                if ($match && $matchCount > $bestRouteParameters) {
-                    $bestRouteParameters = $matchCount;
-                    $bestRoute           = $route;
                 }
             }
         }
@@ -75,10 +78,12 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         $route = $this->explodeRoute($enhancer_url);
         static::initCache();
         $cArgs = count($route);
-        if (!isset(static::$_cacheRoute[$cArgs])) {
+        $class = get_called_class();
+
+        if (!isset(static::$_cacheRoute[$class][$cArgs])) {
             throw new \Nos\NotFoundException();
         }
-        $matchingRoute = $this->findMatchingRoutes($route, static::$_cacheRoute[$cArgs]);
+        $matchingRoute = $this->findMatchingRoutes($route, static::$_cacheRoute[$class][$cArgs]);
         if (empty($matchingRoute)) {
             throw new \Nos\NotFoundException();
         }
@@ -320,17 +325,18 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      */
     private static function initCache()
     {
-        if (static::$_cacheRoute !== null) {
+        $class = get_called_class();
+        if (isset(static::$_cacheRoute[$class])) {
             return;
         }
-        static::$_cacheRoute = array();
-        foreach (static::$_routes as $route => $action) {
-            $route = static::explodeRoute($route);
+        static::$_cacheRoute[$class] = array();
+        foreach ($class::$_routes as $route => $action) {
+            $route = $class::explodeRoute($route);
             $c     = count($route);
-            if (!isset(static::$_cacheRoute[$c])) {
-                static::$_cacheRoute[$c] = array();
+            if (!isset(static::$_cacheRoute[$class][$c])) {
+                static::$_cacheRoute[$class][$c] = array();
             }
-            static::$_cacheRoute[$c][] = array('route' => $route, 'action' => $action);
+            static::$_cacheRoute[$class][$c][] = array('route' => $route, 'action' => $action);
         }
     }
 }
