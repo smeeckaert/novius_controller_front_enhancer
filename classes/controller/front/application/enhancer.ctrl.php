@@ -210,7 +210,11 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
                     return false;
                 }
                 if (!empty(static::$_params[$extractParam]['format'])) {
-                    $matchingElement = static::callback(static::$_params[$extractParam]['format'], array($matchingElement, false));
+                    try {
+                        $matchingElement = static::callback(static::$_params[$extractParam]['format'], array($matchingElement, false));
+                    } catch (\UnexpectedValueException $e) {
+                        return false;
+                    }
                 }
                 $cacheParams[$extractParam] = $matchingElement;
             } elseif ($routeElement != $parameters[$key]) { // Matching string parts of the route
