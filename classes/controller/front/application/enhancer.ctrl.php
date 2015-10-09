@@ -7,7 +7,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
     protected static $_routes = array();
     protected static $_params = array();
     protected static $_cacheRoute = null;
-    private $_cacheParams = array();
+    protected $_cacheParams = array();
     protected static $_cacheProperty = null;
 
     const ROUTE_SEPARATOR = '/';
@@ -88,7 +88,20 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
             throw new \Nos\NotFoundException();
         }
         $action = "action_" . $matchingRoute['action'];
-        return $this->$action();
+        return $this->format($this->$action());
+    }
+
+    protected function format($data)
+    {
+        if (\Input::is_ajax()) {
+            $content = $data;
+            if (get_class($content) === 'View') {
+                $content = $content->render();
+            }
+            \Response::json(200, $content);
+            return;
+        }
+        return $data;
     }
 
     /**
@@ -98,7 +111,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      *
      * @return null|string
      */
-    private static function extractParameter($str)
+    protected static function extractParameter($str)
     {
         return ($str[0] == Controller_Front_Application_Enhancer::PARAM_SEMAPHOR ? substr($str, 1) : null);
     }
@@ -147,7 +160,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      *
      * @return null
      */
-    private function findMatchingRoutes($route, $cachedRoutes)
+    protected function findMatchingRoutes($route, $cachedRoutes)
     {
         $matchingRoute = null;
         foreach ($cachedRoutes as $testingRoute) {
@@ -169,7 +182,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      *
      * @return array|bool
      */
-    private function testRoute($route, $parameters)
+    protected function testRoute($route, $parameters)
     {
         $cacheParams = array();
         foreach ($route as $key => $routeElement) {
@@ -200,7 +213,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      * @return bool|null
      * @throws \Exception
      */
-    private function testParam($param, $value)
+    protected function testParam($param, $value)
     {
         $paramsInfos = static::$_params[$param];
         if (empty($paramsInfos['match']) && empty($paramsInfos['model'])) { // No params, we always match this parameter
@@ -233,7 +246,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      * @return null|Model
      * @throws \Exception
      */
-    private function findModel($paramKey, $params, $value)
+    protected function findModel($paramKey, $params, $value)
     {
         $model      = $params['model'];
         $field_name = null;
@@ -314,7 +327,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      *
      * @return array
      */
-    private static function explodeRoute($route)
+    protected static function explodeRoute($route)
     {
         return array_values(array_filter(explode(Controller_Front_Application_Enhancer::ROUTE_SEPARATOR, $route)));
     }
@@ -323,7 +336,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      * Init the cache route
      * Will store routes by size in $_cacheRoute
      */
-    private static function initCache()
+    protected static function initCache()
     {
         $class = get_called_class();
         if (isset(static::$_cacheRoute[$class])) {
