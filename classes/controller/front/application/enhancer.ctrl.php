@@ -143,13 +143,14 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
     protected static function buildRoute($params, $route)
     {
         static::initCacheProperty();
+        $class = get_called_class();
         // Replace route parameters with values
         foreach ($route as $key => $i) {
             $extract = self::extractParameter($i);
             $v       = $i;
             if (!empty($extract)) {
-                if (isset(static::$_cacheProperty[$extract])) {
-                    $prop = static::$_cacheProperty[$extract];
+                if (isset(static::$_cacheProperty[$class][$extract])) {
+                    $prop = static::$_cacheProperty[$class][$extract];
                     try {
                         $v = $params[$extract]->$prop;
                     } catch (\Exception $e) {
@@ -276,7 +277,8 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         }
 
         static::initCacheProperty();
-        $field_name = \Arr::get(static::$_cacheProperty, $paramKey);
+        $class      = get_called_class();
+        $field_name = \Arr::get(static::$_cacheProperty[$class], $paramKey);
         if (empty($field_name)) {
             return null;
         }
@@ -310,7 +312,8 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      */
     protected static function initCacheProperty()
     {
-        if (static::$_cacheProperty !== null) {
+        $class = get_called_class();
+        if (isset(static::$_cacheProperty[$class])) {
             return;
         }
         foreach (static::$_params as $key => $params) {
@@ -331,10 +334,10 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
                 }
             }
             if (!empty($field_name)) {
-                static::$_cacheProperty[$key] = $field_name;
+                static::$_cacheProperty[$class][$key] = $field_name;
             }
         }
-        if (isset(static::$_cacheProperty['route'])) {
+        if (isset(static::$_cacheProperty[$class]['route'])) {
             throw new \Exception("You can't use 'route' as a parameter name");
         }
     }
