@@ -286,7 +286,15 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         if (get_class($query) != 'Nos\Orm\Query') {
             throw new \Exception("Query method must return a Nos\Orm\Query");
         }
-        return $query->where($field_name, $value)->get_one();
+
+        $where = array(
+            array($field_name, $value),
+        );
+        if($isContextable) {
+            $where[] = array($isContextable['context_property'], $this->main_controller->getPage()->page_context);
+        }
+        
+        return $query->where($where)->get_one();
     }
 
     protected static function callback($cb, $params)
