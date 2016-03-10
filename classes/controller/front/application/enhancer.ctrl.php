@@ -272,6 +272,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         $model      = $params['model'];
         $field_name = null;
         $find       = "$model::query";
+        $isContextable = $model::behaviours('Nos\Orm_Behaviour_Twinnable');
         if (!is_callable($find)) {
             throw new \Exception("Model must have a query method");
         }
