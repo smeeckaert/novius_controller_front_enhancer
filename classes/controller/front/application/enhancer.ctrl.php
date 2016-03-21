@@ -11,7 +11,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
     protected static $_cacheProperty = null;
 
     const ROUTE_SEPARATOR = '/';
-    const PARAM_SEMAPHOR  = ':';
+    const PARAM_SEMAPHOR = ':';
 
     /**
      * Retrieve a route parameter
@@ -88,8 +88,8 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
             throw new \Nos\NotFoundException();
         }
         $this->routeConfig($matchingRoute);
-        $action = "action_" . $matchingRoute['action'];
-        return $this->format($this->$action());
+        $action = "action_".$matchingRoute['action'];
+        return $this->format($this->$action(), \Arr::get($matchingRoute, 'format'));
     }
 
     protected function routeConfig($route)
@@ -108,13 +108,14 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         }
     }
 
-    protected function format($data)
+    protected function format($data, $format = null)
     {
-        if (\Input::is_ajax()) {
+        if (\Input::is_ajax() || $format === 'json') {
             $content = $data;
             if (is_array($content)) {
                 $content = json_encode($content);
             }
+            $this->main_controller->setHeader('Content-Type', 'application/json');
             return $this->main_controller->sendContent($content);
         }
         return $data;
@@ -165,7 +166,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
             }
             $route[$key] = $v;
         }
-        return implode('/', $route) . '.html';
+        return implode('/', $route).'.html';
     }
 
 
@@ -269,9 +270,9 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      */
     protected function findModel($paramKey, $params, $value)
     {
-        $model      = $params['model'];
-        $field_name = null;
-        $find       = "$model::query";
+        $model         = $params['model'];
+        $field_name    = null;
+        $find          = "$model::query";
         $isContextable = $model::behaviours('Nos\Orm_Behaviour_Twinnable');
         if (!is_callable($find)) {
             throw new \Exception("Model must have a query method");
@@ -291,10 +292,10 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         $where = array(
             array($field_name, $value),
         );
-        if($isContextable) {
+        if ($isContextable) {
             $where[] = array($isContextable['context_property'], $this->main_controller->getPage()->page_context);
         }
-        
+
         return $query->where($where)->get_one();
     }
 
@@ -303,7 +304,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         if (!is_callable($cb)) {
             $className = get_called_class();
             if (method_exists($className, $cb)) {
-                $cb = $className . '::' . $cb;
+                $cb = $className.'::'.$cb;
             }
         }
         if (is_callable($cb)) {

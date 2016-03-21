@@ -63,6 +63,7 @@ protected static $_routes = array(
         '/'       => 'home',
         '/:param' => array(
             'action' => 'home',
+            'format' => 'json',
             'cache'  => array(
                 array(
                     'type'     => 'callable',
@@ -73,6 +74,8 @@ protected static $_routes = array(
         ),
     );
 ```
+
+The ```format``` parameter can be set to json in order to format the returned data.
 
 ### Parameters
 
