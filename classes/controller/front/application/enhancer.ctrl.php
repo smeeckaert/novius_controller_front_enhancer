@@ -110,12 +110,14 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
 
     protected function format($data, $format = null)
     {
-        if (\Input::is_ajax() || $format === 'json') {
-            $content = $data;
+        $content = $data;
+        if ($format === 'json') {
             if (is_array($content)) {
                 $content = json_encode($content);
             }
             $this->main_controller->setHeader('Content-Type', 'application/json');
+        }
+        if ((\Input::is_ajax())) {
             return $this->main_controller->sendContent($content);
         }
         return $data;
