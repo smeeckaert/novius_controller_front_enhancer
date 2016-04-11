@@ -89,7 +89,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         }
         $this->routeConfig($matchingRoute);
         $action = "action_".$matchingRoute['action'];
-        return $this->format($this->$action(), \Arr::get($matchingRoute, 'format'));
+        return $this->format($this->$action(), \Arr::get($matchingRoute, 'format'), \Arr::get($matchingRoute, 'raw'));
     }
 
     protected function routeConfig($route)
@@ -108,7 +108,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         }
     }
 
-    protected function format($data, $format = null)
+    protected function format($data, $format = null, $raw = false)
     {
         $content = $data;
         if ($format === 'json') {
@@ -117,7 +117,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
             }
             $this->main_controller->setHeader('Content-Type', 'application/json');
         }
-        if ((\Input::is_ajax())) {
+        if ((\Input::is_ajax()) || $raw) {
             return $this->main_controller->sendContent($content);
         }
         return $data;
