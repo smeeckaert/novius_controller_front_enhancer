@@ -92,8 +92,22 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         return $this->format($this->$action(), \Arr::get($matchingRoute, 'format'), \Arr::get($matchingRoute, 'raw'));
     }
 
+    public static function input()
+    {
+        return \Input::is_ajax() ? 'ajax' : 'page';
+    }
+
     protected function routeConfig($route)
     {
+        if (!isset($route['cache'])) {
+            $route['cache'] = array(
+                array(
+                    'type'     => 'callable',
+                    'callable' => "\Enhancer\Controller_Front_Application_Enhancer::input",
+                    'args'     => array()
+                ),
+            );
+        }
         if (!empty($route['cache'])) {
             $this->setCacheRoute($route['cache']);
         }
