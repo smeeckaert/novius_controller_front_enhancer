@@ -70,7 +70,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
     }
 
 
-    public function action_route()
+    public function action_route($args = array())
     {
         if (method_exists($this->main_controller, 'getEnhancerUrl')) {
             $enhancer_url = $this->main_controller->getEnhancerUrl();
@@ -89,7 +89,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         }
         $this->routeConfig($matchingRoute);
         $action = "action_".$matchingRoute['action'];
-        return $this->format($this->$action(), \Arr::get($matchingRoute, 'format'), \Arr::get($matchingRoute, 'raw'));
+        return $this->format($this->$action($args), \Arr::get($matchingRoute, 'format'), \Arr::get($matchingRoute, 'raw'));
     }
 
     public static function input()
