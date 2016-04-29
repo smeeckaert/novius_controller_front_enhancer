@@ -75,7 +75,9 @@ class Helper_Config
         $routeSegments        = $this->getRoutesSegments($enhancer);
         $routeFields          = $this->getRouteFields($routeSegments, $name);
         $completeListOfFields = array_reduce(\Arr::pluck($routeFields, 'fields'), 'array_merge', array());
-
+        if (empty($completeListOfFields)){
+            return array();
+        }
         $config['layout'] = array(
             'lines' => array(
                 array(
@@ -102,9 +104,7 @@ class Helper_Config
             )
         );
 
-
         $config['fields'] = $completeListOfFields;
-
         return $config;
     }
 }
