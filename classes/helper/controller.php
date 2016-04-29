@@ -8,6 +8,11 @@ use Nos\Config_Data;
 class Helper_Controller
 {
 
+    /**
+     * Get the list of all urlEnhancer from the class $parentClass
+     * @param string $parentClass
+     * @return array
+     */
     public function getEnhancers($parentClass = '\Enhancer\Controller_Front_Application_Enhancer')
     {
         $urlsEnhancers = $this->getAllUrlEnhancers();
@@ -30,6 +35,7 @@ class Helper_Controller
 
     /**
      * Code copied from Tools_Enhancer::_urls
+     * Return the namespace and the class of the controller of an enhancer
      * @param $urlEnhancer
      * @return array
      */
