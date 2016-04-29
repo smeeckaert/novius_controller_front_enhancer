@@ -18,20 +18,19 @@ class Helper_Route
 
     public function getRouteFromSegments($segments)
     {
-        $segments = array_filter($segments);
+        $segments     = array_filter($segments);
         $listSegments = array();
         foreach ($segments as $segment) {
             if (mb_strpos($segment, '/') !== false) {
                 $listSegments = \Arr::merge($listSegments, explode('/', $segment));
-            }
-            else {
+            } else {
                 $listSegments[] = $segment;
             }
         }
         return $listSegments;
     }
 
-    public function getConfigurationSegments($route, $enhancer)
+    public function getConfigurationSegments($route, $enhancer, $context = null)
     {
         $options = Controller_Admin_Route::getOptions();
         $helper  = new Helper_Config();
@@ -39,10 +38,12 @@ class Helper_Route
             return null;
         }
         $ctrl = Nos::main_controller();
-        if (method_exists($ctrl, 'getContext')) {
-            $context = $ctrl->getContext();
-        } else {
-            $context = current(array_keys($options));
+        if (empty($context)) {
+            if (method_exists($ctrl, 'getContext')) {
+                $context = $ctrl->getContext();
+            } else {
+                $context = current(array_keys($options));
+            }
         }
 
         $options = \Arr::get($options, $context);

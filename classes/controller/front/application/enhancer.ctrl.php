@@ -11,6 +11,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
     protected static $_cacheRouteToConfigured = null;
     protected $_cacheParams = array();
     protected static $_cacheProperty = null;
+    protected static $_cachedContext = null;
 
     const ROUTE_SEPARATOR = '/';
     const PARAM_SEMAPHOR = ':';
@@ -38,12 +39,19 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
 
     public static function getUrlEnhanced($params = array())
     {
+        $hasContextProperty  = !empty($params['context']);
         $bestRouteParameters = 0;
         $bestRoute           = null;
+        $cleanCache          = false;
+        if ($hasContextProperty && static::$_cachedContext != $params['context']) {
+            $cleanCache             = true;
+            static::$_cachedContext = $params['context'];
+            static::cleanCacheRoute();
+        }
         if (isset($params['route'])) {
             $bestRoute = array('route' => static::getRouteConfigured($params['route']));
         } else {
-            static::initCache();
+            static::initCache(\Arr::get($params, 'context'));
             $class = get_called_class();
             // Find route with the more matching parameters
             if (!empty(static::$_cacheRoute[$class])) {
@@ -71,6 +79,9 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
                     }
                 }
             }
+        }
+        if ($cleanCache) {
+            static::cleanCacheRoute();
         }
         if (!empty($bestRoute)) {
             return static::buildRoute($params, $bestRoute['route']);
@@ -154,7 +165,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      */
     protected static function extractParameter($str)
     {
-        return ($str[0] == Controller_Front_Application_Enhancer::PARAM_SEMAPHOR ? substr($str, 1) : null);
+        return (!empty($str) && $str[0] == Controller_Front_Application_Enhancer::PARAM_SEMAPHOR ? substr($str, 1) : null);
     }
 
     /**
@@ -391,11 +402,19 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         return array_values(array_filter(explode(Controller_Front_Application_Enhancer::ROUTE_SEPARATOR, $route)));
     }
 
+
+    protected static function cleanCacheRoute()
+    {
+        static::$_cacheRoute             = null;
+        static::$_cacheRouteConfigured   = null;
+        static::$_cacheRouteToConfigured = null;
+    }
+
     /**
      * Init the cache route
      * Will store routes by size in $_cacheRoute
      */
-    protected static function initCache()
+    protected static function initCache($context = null)
     {
         $class = get_called_class();
         if (isset(static::$_cacheRoute[$class])) {
@@ -417,7 +436,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
 
             static::$_cacheRoute[$class][$c][] = $data;
         }
-        static::initConfigCache();
+        static::initConfigCache($context);
     }
 
     protected static function getRouteConfigured($route)
@@ -433,7 +452,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         return static::explodeRoute($route);
     }
 
-    protected static function initConfigCache()
+    protected static function initConfigCache($context = null)
     {
         $class = get_called_class();
         if (isset(static::$_cacheRouteConfigured[$class])) {
@@ -450,7 +469,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
             }
             foreach ($routeList as $key => $route) {
                 $routePath = '/'.implode('/', $route['route']);
-                $segments  = $routeHelper->getConfigurationSegments($routePath, $enhancerName);
+                $segments  = $routeHelper->getConfigurationSegments($routePath, $enhancerName, $context);
                 if (!empty($segments)) {
                     $route['route'] = $routeHelper->getRouteFromSegments($segments);
                 }
