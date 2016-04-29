@@ -48,7 +48,8 @@ class Helper_Config
 
                 $fieldName   = $this->getRouteFieldName($enhancerName, $route, $id);
                 $fieldConfig = array(
-                    'form' => array(
+                    'template' => '{field}',
+                    'form'     => array(
                         'type'  => 'text',
                         'value' => $param,
                     ),
@@ -88,9 +89,10 @@ class Helper_Config
                                     'allowExpand' => true,
                                 ),
                                 'content' => array(
-                                    'view'   => 'nos::form/fields',
+                                    'view'   => 'noviusos_controller_front_enhancer::admin/fields',
                                     'params' => array(
-                                        'fields' => array_keys($completeListOfFields),
+                                        'routeFields' => $routeFields,
+                                        'fields'      => array_keys($completeListOfFields),
                                     ),
                                 ),
                             ),

@@ -13,33 +13,8 @@ return \Arr::merge(array(
         'iconSize'     => 16,
         'labelDisplay' => true
     ),
+    'css'       => array('/static/apps/noviusos_controller_front_enhancer/css/admin/config.css'),
     'form_name' => __('Route configuration'),
-    'fields'    => array('test'=>[]),
+    'fields'    => array('test' => []),
 ), $params
-/*'layout'    => array(
-    'lines' => array(
-        array(
-            'cols' => array(
-                array(
-                    'col_number' => 12,
-                    'view'       => 'nos::form/expander',
-                    'params'     => array(
-                        'title'   => __('Configuration des tarifs par défaut'),
-                        'options' => array(
-                            'allowExpand' => false,
-                        ),
-                        'content' => array(
-                            'view'   => 'nos::form/fields',
-                            'params' => array(
-                                'fields' => array(// 'tarifs',
-                                ),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-        ),
-    ),
-),
-'fields'    => array(),*/
 );
