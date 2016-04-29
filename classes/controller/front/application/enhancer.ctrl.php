@@ -7,6 +7,8 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
     protected static $_routes = array();
     protected static $_params = array();
     protected static $_cacheRoute = null;
+    protected static $_cacheRouteConfigured = null;
+    protected static $_cacheRouteToConfigured = null;
     protected $_cacheParams = array();
     protected static $_cacheProperty = null;
 
@@ -29,36 +31,43 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
     }
 
 
+    public static function getRoutes()
+    {
+        return static::$_routes;
+    }
+
     public static function getUrlEnhanced($params = array())
     {
         $bestRouteParameters = 0;
         $bestRoute           = null;
         if (isset($params['route'])) {
-            return static::buildRoute($params, static::explodeRoute($params['route']));
-        }
-        static::initCache();
-        $class = get_called_class();
-        // Find route with the more matching parameters
-        if (!empty(static::$_cacheRoute[$class])) {
-            foreach (static::$_cacheRoute[$class] as $count => $cachedRoutes) {
-                foreach ($cachedRoutes as $key => $route) {
-                    $match      = true;
-                    $matchCount = 0;
-                    // Try to match all parameters
-                    foreach ($route['route'] as $param) {
-                        $extract = static::extractParameter($param);
-                        if (!empty($extract) && empty($params[$extract])) {
-                            $match = false;
-                            break;
+            $bestRoute = array('route' => static::getRouteConfigured($params['route']));
+        } else {
+            static::initCache();
+            $class = get_called_class();
+            // Find route with the more matching parameters
+            if (!empty(static::$_cacheRoute[$class])) {
+                foreach (static::$_cacheRoute[$class] as $count => $cachedRoutes) {
+                    foreach ($cachedRoutes as $key => $route) {
+                        $match      = true;
+                        $matchCount = 0;
+                        // Try to match all parameters
+                        foreach ($route['route'] as $param) {
+                            $extract = static::extractParameter($param);
+                            if (!empty($extract) && empty($params[$extract])) {
+                                $match = false;
+                                break;
+                            }
+                            if (!empty($extract)) {
+                                $matchCount++;
+                            }
                         }
-                        if (!empty($extract)) {
-                            $matchCount++;
+                        // if we match the more parameter, keep this route
+                        if ($match && $matchCount > $bestRouteParameters) {
+                            $bestRouteParameters = $matchCount;
+                            $routeToConfigure    = static::$_cacheRouteToConfigured[$class][$count][$key];
+                            $bestRoute           = static::$_cacheRouteConfigured[$class][$routeToConfigure['nb']][$routeToConfigure['key']];
                         }
-                    }
-                    // if we match the more parameter, keep this route
-                    if ($match && $matchCount > $bestRouteParameters) {
-                        $bestRouteParameters = $matchCount;
-                        $bestRoute           = $route;
                     }
                 }
             }
@@ -68,7 +77,6 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         }
         return false;
     }
-
 
     public function action_route($args = array())
     {
@@ -80,10 +88,10 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         $cArgs = count($route);
         $class = get_called_class();
 
-        if (!isset(static::$_cacheRoute[$class][$cArgs])) {
+        if (!isset(static::$_cacheRouteConfigured[$class][$cArgs])) {
             throw new \Nos\NotFoundException();
         }
-        $matchingRoute = $this->findMatchingRoutes($route, static::$_cacheRoute[$class][$cArgs]);
+        $matchingRoute = $this->findMatchingRoutes($route, static::$_cacheRouteConfigured[$class][$cArgs]);
         if (empty($matchingRoute)) {
             throw new \Nos\NotFoundException();
         }
@@ -160,7 +168,8 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
     protected static function buildRoute($params, $route)
     {
         static::initCacheProperty();
-        $class = get_called_class();
+        $class       = get_called_class();
+        $routeParams = array();
         // Replace route parameters with values
         foreach ($route as $key => $i) {
             $extract = self::extractParameter($i);
@@ -180,11 +189,12 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
                     $v = static::callback(static::$_params[$extract]['format'], array($params[$extract], true));
                 }
             }
-            $route[$key] = $v;
+            $route[$key]     = $v;
+            $routeParams[$i] = $v;
         }
+
         return implode('/', $route).'.html';
     }
-
 
     /**
      * Find the first matching route
@@ -406,6 +416,54 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
             }
 
             static::$_cacheRoute[$class][$c][] = $data;
+        }
+        static::initConfigCache();
+    }
+
+    protected static function getRouteConfigured($route)
+    {
+        $routeHelper      = new Helper_Route();
+        $controllerHelper = new Helper_Controller();
+        $currentClass     = $controllerHelper->getEnhancers(get_called_class());
+        $enhancerName     = current(array_keys($currentClass));
+        $segments         = $routeHelper->getConfigurationSegments($route, $enhancerName);
+        if (!empty($segments)) {
+            return array_filter($segments);
+        }
+        return static::explodeRoute($route);
+    }
+
+    protected static function initConfigCache()
+    {
+        $class = get_called_class();
+        if (isset(static::$_cacheRouteConfigured[$class])) {
+            return;
+        }
+        $routeHelper                           = new Helper_Route();
+        $controllerHelper                      = new Helper_Controller();
+        $currentClass                          = $controllerHelper->getEnhancers(get_called_class());
+        $enhancerName                          = current(array_keys($currentClass));
+        static::$_cacheRouteConfigured[$class] = array();
+        foreach (static::$_cacheRoute[$class] as $nbParams => $routeList) {
+            if (!isset(static::$_cacheRouteToConfigured[$class][$nbParams])) {
+                static::$_cacheRouteToConfigured[$class][$nbParams] = array();
+            }
+            foreach ($routeList as $key => $route) {
+                $routePath = '/'.implode('/', $route['route']);
+                $segments  = $routeHelper->getConfigurationSegments($routePath, $enhancerName);
+                if (!empty($segments)) {
+                    $route['route'] = $routeHelper->getRouteFromSegments($segments);
+                }
+                $countRoute = count($route['route']);
+                if (!isset(static::$_cacheRouteConfigured[$class][$countRoute])) {
+                    static::$_cacheRouteConfigured[$class][$countRoute] = array();
+                }
+                $keyConfigure = count(static::$_cacheRouteConfigured[$class][$countRoute]);
+
+                // We put the relationship to the new route
+                static::$_cacheRouteToConfigured[$class][$nbParams][$key]          = array('nb' => $countRoute, 'key' => $keyConfigure);
+                static::$_cacheRouteConfigured[$class][$countRoute][$keyConfigure] = $route;
+            }
         }
     }
 }
