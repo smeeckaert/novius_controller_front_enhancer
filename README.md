@@ -114,6 +114,8 @@ It will be called when building the url to transform back the parameter to its s
 
 The callback takes two parameters, the value, and a boolean which is true when building the query.
 
+If the callback returns a `\UnexpectedValueException`, the router will behave as if the parameter didn't matched.
+
 In this example we transform a date parameter to a date object.
 
 ```php

@@ -1,0 +1,24 @@
+.route {
+    margin-bottom: 10px;
+}
+
+.route-container h3 {
+    margin-bottom: 5px;
+}
+
+.route-container .separator {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.route .field input {
+    width: 100px;
+    border-radius: 0;
+    padding: 1px 5px;
+    box-shadow: none;
+}
+
+.route .field input[readonly] {
+    border: 0;
+    color: #333;
+}

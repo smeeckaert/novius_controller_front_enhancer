@@ -14,12 +14,27 @@ return array(
     'provider'  => array(
         'name' => 'Smeeckaert Martin',
     ),
+    'require' => array('lib_options'),
     'namespace' => 'Enhancer',
     'icons'     => array(
         64 => 'static/apps/noviusos_controller_front_enhancer/img/icons/64.png',
         32 => 'static/apps/noviusos_controller_front_enhancer/img/icons/32.png',
         16 => 'static/apps/noviusos_controller_front_enhancer/img/icons/16.png',
     ),
-    'launchers' => array(),
+    'launchers' => array(
+        'Enhancer::Routes'   => array(
+            'name'   => 'Routes', // displayed name of the launcher
+            'icon'   => 'static/apps/noviusos_controller_front_enhancer/img/icons/64.png',
+
+            'action' => array(
+                'action' => 'nosTabs',
+                'tab'    => array(
+                    'url'     => 'admin/noviusos_controller_front_enhancer/route/form', // url to load
+                    'iconUrl' => 'static/apps/noviusos_controller_front_enhancer/img/icons/32.png',
+                ),
+            ),
+        ),
+
+    ),
     'enhancers' => array()
 );
