@@ -40,6 +40,12 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      * @var null
      */
     protected static $_cachedContext = null;
+    /**
+     * The matched route
+     * @var null|array
+     */
+    protected $_matchedRoute = null;
+
 
     const ROUTE_SEPARATOR = '/';
     const PARAM_SEMAPHOR = ':';
@@ -148,13 +154,13 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         if (!isset(static::$_cacheRouteConfigured[$class][$cArgs])) {
             throw new \Nos\NotFoundException();
         }
-        $matchingRoute = $this->findMatchingRoutes($route, static::$_cacheRouteConfigured[$class][$cArgs]);
-        if (empty($matchingRoute)) {
+        $this->_matchedRoute = $this->findMatchingRoutes($route, static::$_cacheRouteConfigured[$class][$cArgs]);
+        if (empty($this->_matchedRoute)) {
             throw new \Nos\NotFoundException();
         }
-        $this->routeConfig($matchingRoute);
-        $action = "action_".$matchingRoute['action'];
-        return $this->format($this->$action($args), \Arr::get($matchingRoute, 'format'), \Arr::get($matchingRoute, 'raw'));
+        $this->routeConfig($this->_matchedRoute);
+        $action = "action_".$this->_matchedRoute['action'];
+        return $this->format($this->$action($args), \Arr::get($this->_matchedRoute, 'format'), \Arr::get($this->_matchedRoute, 'raw'));
     }
 
     /**
@@ -289,6 +295,17 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
         }
         return $matchingRoute;
     }
+    
+    /**
+     * Gets the matched route
+     *
+     * @return null|array
+     */
+    public function getMatchedRoute()
+    {
+        return $this->_matchedRoute;
+    }
+
 
 
     /**
