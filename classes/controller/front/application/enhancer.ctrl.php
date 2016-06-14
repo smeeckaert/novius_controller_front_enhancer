@@ -301,7 +301,7 @@ class Controller_Front_Application_Enhancer extends \Nos\Controller_Front_Applic
      *
      * @return null|array
      */
-    public function getMatchedRoute()
+    public function matchedRoute()
     {
         return $this->_matchedRoute;
     }
