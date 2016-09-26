@@ -26,8 +26,9 @@ class Helper_Controller
      */
     protected function filterEnhancers($list, $parentClass)
     {
-        return array_filter($list, function ($infos) use ($parentClass) {
-            $parsedInfos = $this->parseUrlEnhancer($infos['urlEnhancer']);
+        $self = $this;// In php < 5.4, use is not accessible from closures
+        return array_filter($list, function ($infos) use ($parentClass, $self) {
+            $parsedInfos = $self->parseUrlEnhancer($infos['urlEnhancer']);
             $classname   = $parsedInfos['namespace'].'\\'.$parsedInfos['controller'];
             return is_subclass_of($classname, $parentClass) || $classname == $parentClass;
         });
