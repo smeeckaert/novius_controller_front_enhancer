@@ -21,6 +21,7 @@ return array(
         32 => 'static/apps/noviusos_controller_front_enhancer/img/icons/32.png',
         16 => 'static/apps/noviusos_controller_front_enhancer/img/icons/16.png',
     ),
+    'permission' => array(),
     'launchers' => array(
         'Enhancer::Routes'   => array(
             'name'   => 'Routes', // displayed name of the launcher
